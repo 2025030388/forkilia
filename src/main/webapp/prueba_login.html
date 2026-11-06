@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba de Login - Forkilia</title>
+</head>
+<body>
+    <h1>Prueba de Login</h1>
+
+    <label>Usuario:</label>
+    <input type="text" id="username" value="chef_lux"><br><br>
+
+    <label>Contraseña:</label>
+    <input type="password" id="password" value="cheflux2024"><br><br>
+
+    <button onclick="probarLogin()">Iniciar sesión</button>
+
+    <p id="resultado"></p>
+
+    <script>
+        function probarLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const datos = new URLSearchParams();
+            datos.append('username', username);
+            datos.append('password', password);
+
+            fetch('http://localhost:8080/forkilia/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: datos
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultado').innerText = JSON.stringify(data, null, 2);
+                console.log(data);
+            })
+            .catch(error => {
+                document.getElementById('resultado').innerText = 'Error: ' + error;
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
