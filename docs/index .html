@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forkilia - Demo</title>
+<style>
+:root{--ink:#1f2a37;--soft:#5b6776;--blue:#2d5a87;--blue-d:#234a70;--mint:#d9efe0;--cream:#fdf6e3;--line:#dfe6ee;--warn:#b4472f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;color:var(--ink);min-height:100vh;background:linear-gradient(135deg,#e8f0fb 0%,#fdf6e3 50%,#eaf5ea 100%) fixed;line-height:1.5}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.card{background:#fff;border-radius:24px;box-shadow:0 10px 40px rgba(0,0,0,.08);padding:24px}
+h1,h2,h3{line-height:1.2}
+button,input,select{font:inherit}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:12px;padding:10px 18px;cursor:pointer;font-weight:600}
+.btn:hover{background:var(--blue-d)}
+.btn.ghost{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn.ghost:hover{background:#eef3fa}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+label{display:block;font-size:.9rem;color:var(--soft);margin:12px 0 4px}
+.err{color:var(--warn);font-size:.9rem;min-height:1.3em;margin-top:10px}
+.hint{color:var(--soft);font-size:.88rem;margin-top:14px}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+#login .card{width:100%;max-width:380px}
+#login h1{font-size:2rem;color:var(--blue)}
+#login .btn{width:100%;margin-top:16px}
+#app{display:none}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 24px;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);position:sticky;top:0;z-index:5}
+.logo{font-size:1.5rem;font-weight:700;color:var(--blue)}
+nav{display:flex;gap:6px;overflow-x:auto;max-width:100%}
+nav button{border:0;background:transparent;padding:8px 14px;border-radius:999px;cursor:pointer;color:var(--soft);font-weight:600;white-space:nowrap}
+nav button.on{background:var(--blue);color:#fff}
+.who{font-size:.9rem;color:var(--soft)}
+.who button{margin-left:10px}
+main{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+.demo{background:var(--cream);border-radius:12px;padding:10px 14px;font-size:.88rem;margin-bottom:20px}
+h2{font-size:1.5rem;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer}
+.chips button.on{background:var(--mint);border-color:#9fcfae;font-weight:600}
+.rec h3{font-size:1.25rem}
+.meta{color:var(--soft);font-size:.9rem;margin:4px 0 12px}
+.bar{height:14px;border-radius:999px;background:var(--mint);overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:var(--blue)}
+.bar-l{display:flex;justify-content:space-between;font-size:.85rem;color:var(--soft)}
+.rec ul{margin:12px 0 0 18px;font-size:.92rem}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:.95rem}
+th{color:var(--soft);font-weight:600}
+.st{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--mint);font-size:.85rem}
+.st.pendiente{background:var(--cream)}
+.st.entregado{background:#e6e9ee}
+.form{margin-top:24px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.empty{color:var(--soft);padding:20px 0}
+.av{padding:10px 0;border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <div class="card">
+    <h1>Forkilia</h1>
+    <p class="hint" style="margin-top:4px">Gestiona recetas, costos y pedidos de tu negocio de comida.</p>
+    <label for="u">Usuario</label>
+    <input id="u" autocomplete="username">
+    <label for="p">Contraseña</label>
+    <input id="p" type="password" autocomplete="current-password">
+    <button class="btn" onclick="entrar()">Iniciar sesión</button>
+    <div class="err" id="lerr" role="alert"></div>
+    <p class="hint">Versión de demostración. Usuario <b>chef_lux</b>, contraseña <b>demo1234</b>.</p>
+  </div>
+</section>
+
+<div id="app">
+  <header>
+    <span class="logo">Forkilia</span>
+    <nav id="nav"></nav>
+    <span class="who"><span id="who"></span><button class="btn ghost" onclick="salir()">Salir</button></span>
+  </header>
+  <main>
+    <p class="demo">Esta es una demostración con datos de ejemplo. Lo que agregues o cambies vive solo en tu navegador y se borra al recargar.</p>
+    <div id="main"></div>
+  </main>
+</div>
+
+<script>
+const D={
+  cats:['Plato Fuerte','Sopas','Bebidas','Postres','Combos'],
+  recetas:[{n:'Tacos de Birria',c:'Plato Fuerte',r:4,t:35,costo:48,precio:165,d:'Media',ing:[['Carne de res','500 g'],['Chile guajillo','4 pzas'],['Tortillas de maíz','8 pzas']]}],
+  pedidos:[{f:'F0001',cli:'Cliente de Ejemplo',tipo:'Recolección',total:165,ant:89.64,st:'listo'}],
+  clientes:[{n:'Cliente de Ejemplo',tel:'6690000000',dir:'',emp:'',pers:''},{n:'Empresa Demo',tel:'6690000001',dir:'Calle Ejemplo 123',emp:'Empresa Demo',pers:14}],
+  ing:[['Carne de res','kg'],['Chile guajillo','pzas'],['Tortillas de maíz','pzas']]
+};
+const USERS={chef_lux:['demo1234','Usuario Emprendedor Piloto'],forkilia_admin:['demo1234','Administrador Forkilia']};
+const ORDEN=['pendiente','preparando','listo','entregado'];
+const TABS=[['resumen','Resumen'],['recetas','Recetas'],['pedidos','Pedidos'],['clientes','Clientes'],['ingredientes','Ingredientes']];
+let view='resumen',filtro='Todas';
+const $=s=>document.querySelector(s);
+const money=v=>Number(v).toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const margen=r=>Math.round((r.precio-r.costo)/r.precio*100);
+
+function entrar(){
+  const u=$('#u').value.trim(),p=$('#p').value,x=USERS[u];
+  if(!x||x[0]!==p){$('#lerr').textContent='Usuario o contraseña incorrectos. Revisa los datos de abajo.';return;}
+  $('#lerr').textContent='';$('#who').textContent=x[1];
+  $('#login').style.display='none';$('#app').style.display='block';
+  render();
+}
+function salir(){$('#app').style.display='none';$('#login').style.display='flex';$('#p').value='';}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('#login').style.display!=='none')entrar();});
+function go(v){view=v;render();}
+function setFiltro(c){filtro=c;render();}
+function avanzar(i){const p=D.pedidos[i],k=ORDEN.indexOf(p.st);if(k<ORDEN.length-1)p.st=ORDEN[k+1];render();}
+function addReceta(){
+  const n=$('#rn').value.trim(),c=$('#rc').value,costo=parseFloat($('#rco').value),precio=parseFloat($('#rp').value);
+  if(!n||!(costo>0)||!(precio>0)){$('#rerr').textContent='Escribe el nombre y un costo y precio mayores a 0.';return;}
+  D.recetas.push({n,c,r:1,t:null,costo,precio,d:'Media',ing:[]});
+  filtro='Todas';render();
+}
+
+const V={
+  resumen(){
+    const act=D.pedidos.filter(p=>p.st!=='entregado');
+    return `<h2>Resumen</h2><div class="grid">
+    <div class="card"><h3>Pedidos en curso</h3>${act.length?act.map(p=>`<div class="av"><b>${p.f}</b> · ${esc(p.cli)}<br><span class="meta">${p.tipo} · ${money(p.total)} · <span class="st ${p.st}">${p.st}</span></span></div>`).join(''):'<p class="empty">No hay pedidos en curso.</p>'}</div>
+    <div class="card"><h3>Avisos</h3><div class="av">Nuevo pedido F0001 por ${money(165)}</div><p class="meta" style="margin-top:12px">Tienes ${D.recetas.length} receta(s), ${D.clientes.length} clientes y ${D.ing.length} ingredientes registrados.</p></div></div>`;
+  },
+  recetas(){
+    const lista=D.recetas.filter(r=>filtro==='Todas'||r.c===filtro);
+    const chips=['Todas',...D.cats].map(c=>`<button class="${c===filtro?'on':''}" onclick="setFiltro('${c}')">${c}</button>`).join('');
+    const cards=lista.map(r=>{const pc=Math.min(100,Math.round(r.costo/r.precio*100));return `<article class="card rec">
+      <h3>${esc(r.n)}</h3>
+      <p class="meta">${esc(r.c)} · dificultad ${r.d}${r.t?` · ${r.t} min`:''}${r.r>1?` · rinde ${r.r}`:''}</p>
+      <b>${margen(r)}% de margen</b>
+      <div class="bar" aria-hidden="true"><i style="width:${pc}%"></i></div>
+      <div class="bar-l"><span>Costo ${money(r.costo)}</span><span>Precio ${money(r.precio)}</span></div>
+      ${r.ing.length?`<ul>${r.ing.map(i=>`<li>${i[0]}: ${i[1]}</li>`).join('')}</ul>`:''}</article>`}).join('');
+    return `<h2>Recetas</h2><div class="chips">${chips}</div>
+    <div class="grid">${cards||`<p class="empty">Aún no hay recetas en ${esc(filtro)}. Agrega una abajo.</p>`}</div>
+    <div class="card form"><h3>Nueva receta</h3><div class="row">
+      <div><label for="rn">Nombre</label><input id="rn"></div>
+      <div><label for="rc">Categoría</label><select id="rc">${D.cats.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div><label for="rco">Costo (MXN)</label><input id="rco" type="number" min="0" step="0.01"></div>
+      <div><label for="rp">Precio (MXN)</label><input id="rp" type="number" min="0" step="0.01"></div></div>
+      <div class="err" id="rerr" role="alert"></div>
+      <button class="btn" onclick="addReceta()">Guardar receta</button></div>`;
+  },
+  pedidos(){
+    return `<h2>Pedidos</h2><div class="card tw"><table><thead><tr><th>Folio</th><th>Cliente</th><th>Tipo</th><th>Total</th><th>Anticipo</th><th>Saldo</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${D.pedidos.map((p,i)=>`<tr><td>${p.f}</td><td>${esc(p.cli)}</td><td>${p.tipo}</td><td>${money(p.total)}</td><td>${money(p.ant)}</td><td>${money(p.total-p.ant)}</td><td><span class="st ${p.st}">${p.st}</span></td><td>${p.st!=='entregado'?`<button class="btn ghost" onclick="avanzar(${i})">Pasar a ${ORDEN[ORDEN.indexOf(p.st)+1]}</button>`:''}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  },
+  clientes(){
+    return `<h2>Clientes</h2><div class="grid">${D.clientes.map(c=>`<div class="card"><h3>${esc(c.n)}</h3><p class="meta">Teléfono ${c.tel}</p>${c.emp?`<p>Empresa: ${esc(c.emp)}</p>`:''}${c.pers?`<p>Personas: ${c.pers}</p>`:''}${c.dir?`<p>Dirección: ${esc(c.dir)}</p>`:'<p class="meta">Sin dirección registrada</p>'}</div>`).join('')}</div>`;
+  },
+  ingredientes(){
+    return `<h2>Ingredientes</h2><div class="card tw"><table><thead><tr><th>Ingrediente</th><th>Unidad base</th></tr></thead><tbody>${D.ing.map(i=>`<tr><td>${i[0]}</td><td>${i[1]}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+};
+function render(){
+  $('#nav').innerHTML=TABS.map(t=>`<button class="${t[0]===view?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('');
+  $('#main').innerHTML=V[view]();
+}
+</script>
+</body>
+</html>
